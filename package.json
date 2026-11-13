@@ -1,0 +1,14 @@
+{
+  "name": "jogo-confrontacao-ideias",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Jogo educativo de checagem em tempo real — Espelho Real (Câmara, Google News, Wikipédia) via Vercel Functions.",
+  "scripts": {
+    "dev": "vercel dev",
+    "deploy": "vercel --prod"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
