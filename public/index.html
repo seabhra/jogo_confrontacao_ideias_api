@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Duelo da Realidade — Espelho Real · Ao Vivo</title>
+<meta name="description" content="Jogo educativo de checagem em tempo real: confronte alegações com evidências ao vivo da Câmara, Google News e Wikipédia.">
+<meta name="theme-color" content="#070a16">
+<meta property="og:title" content="Duelo da Realidade — Espelho Real · Ao Vivo">
+<meta property="og:description" content="A verdade não precisa gritar. Precisa de evidências — ao vivo.">
+<meta property="og:type" content="website">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E🪞%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="bg-aurora" aria-hidden="true"></div>
+<div class="bg-grain" aria-hidden="true"></div>
+<div class="bg-scan" aria-hidden="true"></div>
+<canvas id="fx" aria-hidden="true"></canvas>
+
+<header class="topo">
+  <div class="rodada-box">
+    <span class="rotulo">RODADA <b id="numRodada">1</b> / 5</span>
+    <div class="dots" id="dots"></div>
+  </div>
+  <div class="titulo">
+    <h1>DUELO DA <span>REALIDADE</span></h1>
+    <p>A verdade não precisa gritar. Precisa de evidências — <b>ao vivo</b>.</p>
+  </div>
+  <div class="controles">
+    <span class="live-pill" id="livePill"><i class="live-dot"></i> AO VIVO</span>
+    <label class="dif">Dificuldade
+      <select id="difficulty" aria-label="Dificuldade">
+        <option value="normal">Normal</option>
+        <option value="dificil">Difícil</option>
+      </select>
+    </label>
+    <span class="estrela" title="Pontuação total">⭐ <b id="pontos">0</b></span>
+    <button id="btnMudo" class="mini" title="Silenciar efeitos e voz" aria-label="Silenciar som">🔊</button>
+    <button id="btnAvatar" class="mini" title="Trocar avatar" aria-label="Trocar avatar">👤</button>
+    <button id="btnRestart" class="mini" title="Reiniciar partida" aria-label="Reiniciar partida">↺</button>
+  </div>
+</header>
+
+<div class="fontes-bar">
+  <span class="rotulo">FONTES EM TEMPO REAL</span>
+  <div class="chips" id="fontesStatus" aria-live="polite"></div>
+  <span class="atualizado" id="atualizadoEm">consultando…</span>
+  <button class="mini" id="btnRetry" title="Recarregar fontes ao vivo" aria-label="Atualizar fontes">⟳ atualizar</button>
+</div>
+
+<main class="arena" id="arena">
+  <section class="painel convicta" id="painelConvicta">
+    <h2>Pessoa Convicta</h2>
+    <p class="sub">Repete a alegação que circula.</p>
+    <div class="avatar" id="avatarConvicta"></div>
+    <div class="badge conv" id="badgeConv">Convicção: 95%</div>
+    <div class="conv-bar" aria-hidden="true"><i id="convBarFill"></i></div>
+    <div class="fala" id="falaConvicta" aria-live="polite"></div>
+  </section>
+
+  <div class="espelho-div" aria-hidden="true"><i></i></div>
+
+  <section class="centro">
+    <div class="simbolos" aria-hidden="true"><span>➕</span><span>🟰</span><span>❓</span></div>
+    <div class="card-alegacao">
+      <span class="rotulo">A AFIRMAÇÃO</span>
+      <p id="alegacao">…</p>
+      <small>Investigue as fontes ao vivo antes de responder.</small>
+    </div>
+  </section>
+
+  <section class="painel verificadora" id="painelVerificadora">
+    <h2>Pessoa Verificadora</h2>
+    <p class="sub">Investiga, confronta e verifica.</p>
+    <div class="avatar" id="avatarVerificadora"></div>
+    <div class="badge verif" id="badgeVerif">Verificação: aguardando</div>
+    <div class="fala" id="falaVerificadora" aria-live="polite"><em>Aguardando evidências…</em></div>
+  </section>
+
+  <div class="loading" id="loading">
+    <div class="spinner" aria-hidden="true"></div>
+    <p id="loadingMsg">Cruzando fontes oficiais e imprensa em tempo real…</p>
+  </div>
+  <div class="erro-box" id="erroBox" hidden>
+    <p id="erroMsg"></p>
+    <button class="acao azul" id="btnRetryErro">⟳ Tentar novamente</button>
+  </div>
+</main>
+
+<nav class="acoes" aria-label="Ações da rodada">
+  <button class="acao azul"  id="btnEvidencias">📊 Apresentar Evidências<small>Manchetes e dados oficiais ao vivo.</small></button>
+  <button class="acao roxo"  id="btnPergunta">❓ Fazer uma Pergunta Decisiva<small>Leve a alegação a se contradizer.</small></button>
+  <button class="acao verde" id="btnOrigem">🔗 Rastrear a Origem<small>Linha do tempo real da cobertura.</small></button>
+</nav>
+
+<footer class="rodape">
+  🏆 PONTUAÇÃO: precisão + evidência + raciocínio crítico
+  <span class="nota">Evidências geradas ao vivo (Câmara · Google News · Wikipédia), com fonte e hora. Avatar seu ou fictício (consentimento). Voz de verificação sintética (IA) — nenhum rosto/voz de terceiros é sintetizado.</span>
+</footer>
+
+<div class="modal" id="modalAvatar" role="dialog" aria-modal="true" aria-label="Escolher avatar"><div class="caixa">
+  <h3>Escolha o avatar do espelho</h3>
+  <p class="dica">Os dois lados usam a mesma imagem — você é o espelho. Personagem fictício ou a sua própria foto.</p>
+  <div class="presets" id="presets"></div>
+  <div class="upload">
+    <label class="btn-upload">📷 Enviar minha imagem<input type="file" id="inputAvatar" accept="image/*" hidden></label>
+    <img id="previewAvatar" alt="Prévia do avatar enviado" hidden>
+    <label class="consent"><input type="checkbox" id="consentAvatar"> Confirmo que a imagem é minha ou de um personagem fictício/licenciado. Ela fica só neste navegador.</label>
+    <button class="acao verde" id="btnUsarImagem" disabled>Usar esta imagem</button>
+  </div>
+  <button class="fechar" data-fechar>Fechar</button>
+</div></div>
+
+<div class="modal" id="modalEvidencias" role="dialog" aria-modal="true" aria-label="Evidências ao vivo"><div class="caixa">
+  <h3>📊 Evidências ao vivo</h3>
+  <p class="dica">Peso por confiabilidade da fonte. Cartas-espelho (o próprio ato/dado do partido) valem ×1,5.</p>
+  <div id="listaEvidencias"></div>
+  <button class="fechar" data-fechar>Fechar</button>
+</div></div>
+
+<div class="modal" id="modalPergunta" role="dialog" aria-modal="true" aria-label="Pergunta decisiva"><div class="caixa">
+  <h3>❓ Pergunta Decisiva</h3>
+  <p class="dica">Pontua pela lógica, não pela agressividade.</p>
+  <div id="listaPerguntas"></div>
+  <p id="feedbackPergunta" class="feedback" aria-live="polite"></p>
+  <button class="fechar" data-fechar>Fechar</button>
+</div></div>
+
+<div class="modal" id="modalOrigem" role="dialog" aria-modal="true" aria-label="Linha do tempo da cobertura"><div class="caixa">
+  <h3>🔗 Linha do tempo da cobertura (ao vivo)</h3>
+  <p class="dica">+20 de raciocínio por rastrear. Clique no nó de <b>mutação</b> (heurística), quando detectado, para +15.</p>
+  <ol class="timeline" id="timeline"></ol>
+  <button class="fechar" data-fechar>Fechar</button>
+</div></div>
+
+<div class="modal" id="modalFimRodada" role="dialog" aria-modal="true" aria-label="Fim de rodada" data-trava><div class="caixa">
+  <h3 id="tituloFim"></h3>
+  <p id="textoFim"></p>
+  <button class="acao verde" id="btnProxima">Próxima rodada ➜</button>
+</div></div>
+
+<div class="modal" id="modalFim" role="dialog" aria-modal="true" aria-label="Raio-X da partida" data-trava><div class="caixa">
+  <h3>🏆 Raio-X da partida</h3>
+  <p id="resumoFim"></p>
+  <button class="acao azul" id="btnCopiar">📋 Copiar raio-X com fontes ao vivo</button>
+  <button class="acao verde" id="btnReiniciar">Jogar novamente</button>
+</div></div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+<script src="live.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
