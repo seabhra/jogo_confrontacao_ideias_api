@@ -2,18 +2,14 @@ import { timedFetch, ok, fail, param, decodeXML } from "./_lib.js";
 
 function parseRSS(xml, max) {
   const items = [];
-  const re = /<item\b[\s\S]*?<\/item>/gi;
-  let m;
-  while ((m = re.exec(xml)) && items.length < max) {
-    const block = m[0];
-    const tag = name => {
-      const t = new RegExp("<" + name + "\\b[^>]*>([\\s\\S]*?)<\\/" + name + ">", "i").exec(block);
-      return t ? decodeXML(t[1].trim()) : "";
-    };
-    const titulo = tag("title");
-    const link = tag("link");
-    const data = tag("pubDate");
-    let fonte = tag("source");
+  const blocos = xml.match(/<item\b[\s\S]*?<\/item>/gi) || [];
+  const pick = (bloco, re) => { const m = re.exec(bloco); return m ? decodeXML(m[1].trim()) : ""; };
+  for (const bloco of blocos) {
+    if (items.length >= max) break;
+    const titulo = pick(bloco, /<title[^>]*>([\s\S]*?)<\/title>/i);
+    const link = pick(bloco, /<link[^>]*>([\s\S]*?)<\/link>/i);
+    const data = pick(bloco, /<pubDate[^>]*>([\s\S]*?)<\/pubDate>/i);
+    let fonte = pick(bloco, /<source[^>]*>([\s\S]*?)<\/source>/i);
     if (!fonte && titulo.includes(" - ")) fonte = titulo.split(" - ").pop().trim();
     if (titulo && link) items.push({ titulo, link, fonte: fonte || "Imprensa", data });
   }
